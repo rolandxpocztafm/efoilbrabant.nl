@@ -24,7 +24,7 @@ efoil met korting" data-sentry-element="meta" data-sentry-source-file="Published
 </div>
 
 <div class="d-flex justify-content-center">
-  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15000!2d4.722266!3d51.687139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c427389a30a397%3A0x6502cb820b3a31a0!2sDe%20Winput!5e0!3m2!1sen!2snl!4v1793363211435!5m2!1sen!2snl" width="100%" height="450" style="border:0;max-width:800px;border-radius:8px;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10000!2d4.722266!3d51.687139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c427389a30a397%3A0x6502cb820b3a31a0!2sDe%20Winput!5e0!3m2!1sen!2snl!4v1793363211435!5m2!1sen!2snl" width="100%" height="450" style="border:0;max-width:800px;border-radius:8px;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 
 </div></div></div></div><div class="position-relative" id="footer" data-section-id="d0db95f0-0726-4ca8-b53e-5d6d9c102ea3" data-section-type="Footer"><footer id="Footer" class="f1dlc9hj fom2f23 f1vaphum"><div class="container g-0 f1re41gn f45h align-items-center"><div class="row f1fbucww align-items-center"><div class="col align-items-center text-decoration-none logo-or-title"><a href="index.html" class="text-decoration-none f1nq0oqd"><h3>eFoil Brabant</h3></a></div></div><div class="row"><div class="col"><div class="d-flex flex-wrap"><ul class="nav nav-pills f14icp2y"><li class="nav-item"><a href="https://efoilbrabant.online" class="text nav-link primary-text f1827nuz f1nq0oqd" target="_blank" rel="nofollow noopener" aria-label="English (opens in new tab)">English</a></li></ul></div></div></div></div></footer></div></div></main></div><script src="assets/bootstrap.bundle.min.js"></script><script>(function(){
@@ -65,48 +65,52 @@ function initCarousels(){
 }
 function initAccordions(){
   var triggers=document.querySelectorAll('[role="button"][aria-controls]');
+  function getPanelHeight(panel){
+    var h=0;
+    var children=panel.children;
+    for(var i=0;i<children.length;i++){
+      h+=children[i].scrollHeight||children[i].offsetHeight||0;
+    }
+    if(h<30){h=panel.scrollHeight||60;}
+    return Math.max(h,40);
+  }
+  function setOpen(trigger,panel,open){
+    trigger.setAttribute("aria-expanded",open?"true":"false");
+    panel.classList.toggle("expanded",open);
+    var icon=trigger.querySelector(".icon");
+    if(icon){icon.classList.toggle("expanded-icon",open);}
+    var label=trigger.getAttribute("aria-label");
+    if(label){
+      trigger.setAttribute("aria-label",
+        label.replace(open?"Expand":"Collapse",open?"Collapse":"Expand"));
+    }
+    panel.style.overflow="hidden";
+    panel.style.transition="height 0.25s ease";
+    if(open){
+      panel.style.height=getPanelHeight(panel)+"px";
+    }else{
+      panel.style.height="0px";
+    }
+  }
   for(var i=0;i<triggers.length;i++){(function(trigger){
     var panel=document.getElementById(trigger.getAttribute("aria-controls"));
     if(!panel||panel.className.indexOf("accordion-content")===-1){return;}
-    function setOpen(open){
-      trigger.setAttribute("aria-expanded",open?"true":"false");
-      panel.classList.toggle("expanded",open);
-      var icon=trigger.querySelector(".icon");
-      if(icon){icon.classList.toggle("expanded-icon",open);}
-      var label=trigger.getAttribute("aria-label");
-      if(label){
-        trigger.setAttribute("aria-label",
-          label.replace(open?"Expand":"Collapse",open?"Collapse":"Expand"));
-      }
-      // The class alone is not enough. The panel styles its open state with the
-      // grid 0fr -> 1fr trick, and the panel is a flex item, where that track
-      // resolves to zero however it is set — so drive the height directly and
-      // let the class carry the padding and icon state.
-      var inner=panel.firstElementChild;
-      panel.style.overflow="hidden";
-      panel.style.height=open&&inner?inner.scrollHeight+"px":"0px";
-    }
-    function toggle(){
+    // Start closed
+    setOpen(trigger,panel,false);
+    function toggle(e){
+      if(e){e.stopPropagation();}
       var open=trigger.getAttribute("aria-expanded")==="true";
-      if(!open){
-        // One panel at a time, matching the single expandedIndex the section
-        // keeps in React state. The panels do not share a close parent, so
-        // climb to the nearest ancestor that holds more than one of them.
-        var group=trigger,depth=0;
-        while(group&&depth<8){
-          if(group.querySelectorAll('[role="button"][aria-controls]').length>1){break;}
-          group=group.parentElement;depth++;
-        }
-        if(group){
-          var others=group.querySelectorAll('[role="button"][aria-controls]');
-          for(var j=0;j<others.length;j++){
-            if(others[j]!==trigger&&others[j].getAttribute("aria-expanded")==="true"){
-              others[j].click();
-            }
-          }
+      // Close others in the same FAQ list
+      var parent=trigger.closest(".f9f8okj")||trigger.parentElement;
+      var container=parent?parent.parentElement:document;
+      var all=container.querySelectorAll('[role="button"][aria-controls]');
+      for(var j=0;j<all.length;j++){
+        if(all[j]!==trigger&&all[j].getAttribute("aria-expanded")==="true"){
+          var p=document.getElementById(all[j].getAttribute("aria-controls"));
+          if(p)setOpen(all[j],p,false);
         }
       }
-      setOpen(!open);
+      setOpen(trigger,panel,!open);
     }
     trigger.addEventListener("click",toggle);
     trigger.addEventListener("keydown",function(event){
