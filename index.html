@@ -24,7 +24,7 @@ efoil met korting" data-sentry-element="meta" data-sentry-source-file="Published
 </div>
 
 <div class="d-flex justify-content-center">
-  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10000!2d4.722266!3d51.687139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c427389a30a397%3A0x6502cb820b3a31a0!2sDe%20Winput!5e0!3m2!1sen!2snl!4v1793363211435!5m2!1sen!2snl" width="100%" height="450" style="border:0;max-width:800px;border-radius:8px;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d20000!2d4.722266!3d51.687139!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47c427389a30a397%3A0x6502cb820b3a31a0!2sDe%20Winput!5e0!3m2!1sen!2snl!4v1793363211435!5m2!1sen!2snl" width="100%" height="450" style="border:0;max-width:800px;border-radius:8px;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 
 </div></div></div></div><div class="position-relative" id="footer" data-section-id="d0db95f0-0726-4ca8-b53e-5d6d9c102ea3" data-section-type="Footer"><footer id="Footer" class="f1dlc9hj fom2f23 f1vaphum"><div class="container g-0 f1re41gn f45h align-items-center"><div class="row f1fbucww align-items-center"><div class="col align-items-center text-decoration-none logo-or-title"><a href="index.html" class="text-decoration-none f1nq0oqd"><h3>eFoil Brabant</h3></a></div></div><div class="row"><div class="col"><div class="d-flex flex-wrap"><ul class="nav nav-pills f14icp2y"><li class="nav-item"><a href="https://efoilbrabant.online" class="text nav-link primary-text f1827nuz f1nq0oqd" target="_blank" rel="nofollow noopener" aria-label="English (opens in new tab)">English</a></li></ul></div></div></div></div></footer></div></div></main></div><script src="assets/bootstrap.bundle.min.js"></script><script>(function(){
@@ -66,13 +66,25 @@ function initCarousels(){
 function initAccordions(){
   var triggers=document.querySelectorAll('[role="button"][aria-controls]');
   function getPanelHeight(panel){
+    // Temporarily remove height constraint so we can measure real content
+    var prevH=panel.style.height;
+    var prevO=panel.style.overflow;
+    panel.style.height="auto";
+    panel.style.overflow="visible";
     var h=0;
-    var children=panel.children;
-    for(var i=0;i<children.length;i++){
-      h+=children[i].scrollHeight||children[i].offsetHeight||0;
+    var node=panel;
+    // Measure deepest content
+    var inners=panel.querySelectorAll("div");
+    for(var i=0;i<inners.length;i++){
+      var sh=inners[i].scrollHeight||0;
+      if(sh>h)h=sh;
     }
-    if(h<30){h=panel.scrollHeight||60;}
-    return Math.max(h,40);
+    h=Math.max(h, panel.scrollHeight||0, panel.offsetHeight||0);
+    // Restore
+    panel.style.height=prevH;
+    panel.style.overflow=prevO;
+    // Extra padding so text is fully visible
+    return Math.max(h+24, 80);
   }
   function setOpen(trigger,panel,open){
     trigger.setAttribute("aria-expanded",open?"true":"false");
